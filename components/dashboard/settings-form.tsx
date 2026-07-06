@@ -19,7 +19,13 @@ import type { Business, WorkingHours } from "@/types";
 import { DAY_LABELS, SECTOR_OPTIONS } from "@/types";
 import Link from "next/link";
 
-export function SettingsForm({ business }: { business: Business }) {
+export function SettingsForm({
+  business,
+  googleConfigured = true,
+}: {
+  business: Business;
+  googleConfigured?: boolean;
+}) {
   const [workingHours, setWorkingHours] = useState<WorkingHours>(
     business.working_hours
   );
@@ -191,9 +197,23 @@ export function SettingsForm({ business }: { business: Business }) {
               <p className="text-sm text-slate-500">
                 Google Takvim bağlayarak randevuları otomatik senkronize edin.
               </p>
-              <Button asChild>
-                <Link href="/api/auth/google">Google Takvim Bağla</Link>
-              </Button>
+              {googleConfigured ? (
+                <Button asChild>
+                  <Link href="/api/auth/google">Google Takvim Bağla</Link>
+                </Button>
+              ) : (
+                <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+                  Google OAuth yapılandırması eksik. Vercel&apos;de{" "}
+                  <code className="text-xs">GOOGLE_CLIENT_ID</code> ve{" "}
+                  <code className="text-xs">GOOGLE_CLIENT_SECRET</code>{" "}
+                  tanımlayın, ardından Google Cloud Console&apos;da redirect URI
+                  olarak{" "}
+                  <code className="text-xs break-all">
+                    https://randevuai.vercel.app/api/auth/google/callback
+                  </code>{" "}
+                  ekleyin.
+                </p>
+              )}
             </div>
           )}
         </CardContent>
