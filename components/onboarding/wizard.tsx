@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { GoogleBusinessSetup } from "@/components/dashboard/google-business-setup";
 import {
   updateBusinessSettings,
   updateWorkingHours,
@@ -21,6 +22,7 @@ import { DEFAULT_WORKING_HOURS } from "@/types";
 
 const STEPS = [
   "İşletme Bilgileri",
+  "Google İşletme",
   "Hizmet Ekle",
   "Çalışma Saatleri",
   "Google Takvim",
@@ -31,9 +33,13 @@ const STEPS = [
 export function OnboardingWizard({
   business,
   serviceCount,
+  placesConfigured,
+  mapsApiKey,
 }: {
   business: Business;
   serviceCount: number;
+  placesConfigured: boolean;
+  mapsApiKey: boolean;
 }) {
   const router = useRouter();
   const [step, setStep] = useState(0);
@@ -52,23 +58,23 @@ export function OnboardingWizard({
     else setStep(1);
   }
 
-  async function handleStep2(e: React.FormEvent<HTMLFormElement>) {
+  async function handleStep3(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoading(true);
     const result = await createService(new FormData(e.currentTarget));
     setLoading(false);
     if (result.error) toast.error(result.error);
-    else setStep(2);
+    else setStep(3);
   }
 
-  async function handleStep3() {
+  async function handleStep4() {
     setLoading(true);
     const result = await updateWorkingHours(
       business.working_hours ?? DEFAULT_WORKING_HOURS
     );
     setLoading(false);
     if (result.error) toast.error(result.error);
-    else setStep(3);
+    else setStep(4);
   }
 
   async function handleFinish() {
@@ -120,9 +126,27 @@ export function OnboardingWizard({
                   <option value="diğer">Diğer</option>
                 </select>
               </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Şehir</Label>
+                  <Input
+                    name="city"
+                    defaultValue={business.city ?? ""}
+                    placeholder="İstanbul"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Telefon</Label>
+                  <Input name="phone" defaultValue={business.phone ?? ""} />
+                </div>
+              </div>
               <div className="space-y-2">
-                <Label>Telefon</Label>
-                <Input name="phone" defaultValue={business.phone ?? ""} />
+                <Label>Adres</Label>
+                <Input
+                  name="address"
+                  defaultValue={business.address ?? ""}
+                  placeholder="Mahalle, cadde, no"
+                />
               </div>
               <Button type="submit" className="w-full" disabled={loading}>
                 Devam
@@ -131,7 +155,31 @@ export function OnboardingWizard({
           )}
 
           {step === 1 && (
-            <form onSubmit={handleStep2} className="space-y-4">
+            <div className="space-y-4">
+              <p className="text-sm text-slate-500">
+                Google&apos;da işletmenizi aratın ve arama sonucundaki kartı
+                panele ekleyin. Müşterilerinizin gördüğü profil burada
+                görünecek.
+              </p>
+              <GoogleBusinessSetup
+                business={business}
+                placesConfigured={placesConfigured}
+                mapsApiKey={mapsApiKey}
+                onSaved={() => router.refresh()}
+              />
+              <div className="flex gap-2 pt-2">
+                <Button variant="outline" onClick={() => setStep(0)}>
+                  Geri
+                </Button>
+                <Button className="flex-1" onClick={() => setStep(2)}>
+                  {business.google_business_url ? "Devam" : "Şimdilik Atla"}
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {step === 2 && (
+            <form onSubmit={handleStep3} className="space-y-4">
               <div className="space-y-2">
                 <Label>Hizmet Adı</Label>
                 <Input name="name" placeholder="Saç Kesimi" required />
@@ -152,7 +200,7 @@ export function OnboardingWizard({
                 </p>
               )}
               <div className="flex gap-2">
-                <Button type="button" variant="outline" onClick={() => setStep(2)}>
+                <Button type="button" variant="outline" onClick={() => setStep(3)}>
                   {serviceCount > 0 ? "Atla" : "Geri"}
                 </Button>
                 <Button type="submit" className="flex-1" disabled={loading}>
@@ -162,24 +210,24 @@ export function OnboardingWizard({
             </form>
           )}
 
-          {step === 2 && (
+          {step === 3 && (
             <div className="space-y-4">
               <p className="text-sm text-slate-500">
                 Varsayılan çalışma saatleri kullanılacak. Daha sonra Ayarlar&apos;dan
                 düzenleyebilirsiniz.
               </p>
               <div className="flex gap-2">
-                <Button variant="outline" onClick={() => setStep(1)}>
+                <Button variant="outline" onClick={() => setStep(2)}>
                   Geri
                 </Button>
-                <Button className="flex-1" onClick={handleStep3} disabled={loading}>
+                <Button className="flex-1" onClick={handleStep4} disabled={loading}>
                   Devam
                 </Button>
               </div>
             </div>
           )}
 
-          {step === 3 && (
+          {step === 4 && (
             <div className="space-y-4">
               <p className="text-sm text-slate-500">
                 Google Takvim bağlayarak randevuları otomatik senkronize edin.
@@ -187,25 +235,25 @@ export function OnboardingWizard({
               <Button asChild className="w-full">
                 <Link href="/api/auth/google">Google Takvim Bağla</Link>
               </Button>
-              <Button variant="outline" className="w-full" onClick={() => setStep(4)}>
+              <Button variant="outline" className="w-full" onClick={() => setStep(5)}>
                 Şimdilik Atla
               </Button>
             </div>
           )}
 
-          {step === 4 && (
+          {step === 5 && (
             <div className="space-y-4">
               <p className="text-sm text-slate-500">
                 WhatsApp kurulumu için Meta Developer hesabınızda webhook
                 ayarlarını yapın. Detaylı rehber panelde.
               </p>
-              <Button className="w-full" onClick={() => setStep(5)}>
+              <Button className="w-full" onClick={() => setStep(6)}>
                 Anladım, Devam
               </Button>
             </div>
           )}
 
-          {step === 5 && (
+          {step === 6 && (
             <div className="space-y-4 text-center">
               <CheckCircle2 className="mx-auto h-16 w-16 text-emerald-600" />
               <p className="text-slate-600">

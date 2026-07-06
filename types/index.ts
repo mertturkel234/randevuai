@@ -43,10 +43,25 @@ export interface ConversationState {
   customer_name: string | null;
 }
 
+export interface GoogleBusinessProfile {
+  place_id: string;
+  name: string;
+  address: string | null;
+  rating: number | null;
+  review_count: number | null;
+  phone: string | null;
+  website: string | null;
+  maps_url: string | null;
+  photo_url: string | null;
+  category: string | null;
+}
+
 export interface Business {
   id: string;
   name: string;
   phone: string | null;
+  address: string | null;
+  city: string | null;
   whatsapp_number: string | null;
   whatsapp_phone_number_id: string | null;
   sector: Sector;
@@ -54,6 +69,9 @@ export interface Business {
   working_hours: WorkingHours;
   google_calendar_id: string | null;
   google_refresh_token: string | null;
+  google_place_id: string | null;
+  google_business_url: string | null;
+  google_business_data: GoogleBusinessProfile | null;
   subscription_status: SubscriptionStatus;
   admin_whatsapp: string | null;
   daily_message_count: number;

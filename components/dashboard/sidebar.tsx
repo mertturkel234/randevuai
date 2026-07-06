@@ -11,6 +11,7 @@ import {
   LogOut,
   Menu,
   X,
+  MapPin,
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -22,6 +23,7 @@ const navItems = [
   { href: "/dashboard/appointments", label: "Randevular", icon: Calendar },
   { href: "/dashboard/services", label: "Hizmetler", icon: Scissors },
   { href: "/dashboard/conversations", label: "Konuşmalar", icon: MessageSquare },
+  { href: "/dashboard/google-business", label: "Google İşletme", icon: MapPin },
   { href: "/dashboard/whatsapp", label: "WhatsApp", icon: MessageSquare },
   { href: "/dashboard/settings", label: "Ayarlar", icon: Settings },
 ];

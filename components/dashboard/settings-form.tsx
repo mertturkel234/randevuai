@@ -76,15 +76,34 @@ export function SettingsForm({
                 ))}
               </select>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="phone">Telefon</Label>
-              <Input
-                id="phone"
-                name="phone"
-                defaultValue={business.phone ?? ""}
-                placeholder="05XX XXX XX XX"
-              />
-            </div>
+              <div className="space-y-2">
+                <Label htmlFor="phone">Telefon</Label>
+                <Input
+                  id="phone"
+                  name="phone"
+                  defaultValue={business.phone ?? ""}
+                  placeholder="05XX XXX XX XX"
+                />
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="city">Şehir</Label>
+                  <Input
+                    id="city"
+                    name="city"
+                    defaultValue={business.city ?? ""}
+                    placeholder="İstanbul"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="address">Adres</Label>
+                  <Input
+                    id="address"
+                    name="address"
+                    defaultValue={business.address ?? ""}
+                  />
+                </div>
+              </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="whatsapp_number">WhatsApp Numarası</Label>

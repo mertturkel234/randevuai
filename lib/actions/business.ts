@@ -5,11 +5,17 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireBusiness } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import type { WorkingHours } from "@/types";
+import type { WorkingHours, GoogleBusinessProfile } from "@/types";
+import {
+  getGooglePlaceDetails,
+  parseGoogleMapsUrl,
+} from "@/lib/google-places";
 
 const businessSchema = z.object({
   name: z.string().min(2, "İşletme adı en az 2 karakter olmalı"),
   phone: z.string().optional(),
+  address: z.string().optional(),
+  city: z.string().optional(),
   whatsapp_number: z.string().optional(),
   whatsapp_phone_number_id: z.string().optional(),
   admin_whatsapp: z.string().optional(),
@@ -23,6 +29,8 @@ export async function updateBusinessSettings(formData: FormData) {
   const parsed = businessSchema.safeParse({
     name: formData.get("name"),
     phone: formData.get("phone") || undefined,
+    address: formData.get("address") || undefined,
+    city: formData.get("city") || undefined,
     whatsapp_number: formData.get("whatsapp_number") || undefined,
     whatsapp_phone_number_id:
       formData.get("whatsapp_phone_number_id") || undefined,
@@ -195,6 +203,69 @@ export async function cancelAppointment(id: string) {
   }
 
   revalidatePath("/dashboard/appointments");
+  return { success: true };
+}
+
+export async function saveGoogleBusinessProfile(profile: GoogleBusinessProfile) {
+  const business = await requireBusiness();
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from("businesses")
+    .update({
+      google_place_id: profile.place_id,
+      google_business_url: profile.maps_url,
+      google_business_data: profile,
+      address: profile.address ?? business.address,
+      phone: profile.phone ?? business.phone,
+    })
+    .eq("id", business.id);
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/google-business");
+  revalidatePath("/dashboard/settings");
+  return { success: true };
+}
+
+export async function saveGoogleBusinessUrl(url: string) {
+  const business = await requireBusiness();
+  const supabase = await createClient();
+
+  const parsed = parseGoogleMapsUrl(url);
+  let profile: GoogleBusinessProfile | null = null;
+
+  if (parsed.placeId) {
+    profile = await getGooglePlaceDetails(parsed.placeId);
+  }
+
+  const fallbackProfile: GoogleBusinessProfile = profile ?? {
+    place_id: parsed.placeId ?? "",
+    name: business.name,
+    address: business.address,
+    rating: null,
+    review_count: null,
+    phone: business.phone,
+    website: null,
+    maps_url: url,
+    photo_url: null,
+    category: null,
+  };
+
+  const { error } = await supabase
+    .from("businesses")
+    .update({
+      google_place_id: fallbackProfile.place_id || null,
+      google_business_url: url,
+      google_business_data: fallbackProfile,
+    })
+    .eq("id", business.id);
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/google-business");
   return { success: true };
 }
 

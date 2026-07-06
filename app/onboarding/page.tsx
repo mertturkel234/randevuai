@@ -5,6 +5,7 @@ import {
   getOrCreateBusinessForUser,
 } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
+import { isGooglePlacesConfigured } from "@/lib/google-places";
 
 export default async function OnboardingPage() {
   const user = await getCurrentUser();
@@ -24,7 +25,12 @@ export default async function OnboardingPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-12">
-      <OnboardingWizard business={business} serviceCount={count ?? 0} />
+      <OnboardingWizard
+        business={business}
+        serviceCount={count ?? 0}
+        placesConfigured={isGooglePlacesConfigured()}
+        mapsApiKey={Boolean(process.env.GOOGLE_MAPS_API_KEY?.trim())}
+      />
     </div>
   );
 }

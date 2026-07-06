@@ -38,7 +38,11 @@ export default async function SetupPage() {
               <code className="rounded bg-slate-100 px-1">
                 supabase/migrations/001_initial_schema.sql
               </code>{" "}
-              içeriğini yapıştırın
+              ve ardından{" "}
+              <code className="rounded bg-slate-100 px-1">
+                002_google_business_profile.sql
+              </code>{" "}
+              dosyalarını sırayla çalıştırın
             </li>
             <li>Run butonuna basın</li>
             <li>Bu sayfayı yenileyin</li>

@@ -5,8 +5,11 @@ import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { SetupBanner } from "@/components/dashboard/setup-banner";
+import { GoogleBusinessResultCard } from "@/components/dashboard/google-business-result-card";
+import { GoogleBusinessMap } from "@/components/dashboard/google-business-map";
 import { formatDateTime } from "@/lib/utils";
 import { startOfDay, endOfDay, startOfWeek, endOfWeek } from "date-fns";
+import type { GoogleBusinessProfile } from "@/types";
 
 export default async function DashboardPage() {
   const business = await getCurrentBusiness();
@@ -14,6 +17,7 @@ export default async function DashboardPage() {
 
   const supabase = await createClient();
   const now = new Date();
+  const googleProfile = business.google_business_data as GoogleBusinessProfile | null;
 
   const [{ count: todayCount }, { count: weekCount }, { data: conversations }] =
     await Promise.all([
@@ -83,6 +87,51 @@ export default async function DashboardPage() {
           );
         })}
       </div>
+
+      {googleProfile ? (
+        <div className="grid gap-6 lg:grid-cols-2">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle>Google&apos;da Görünümünüz</CardTitle>
+              <Button asChild variant="outline" size="sm">
+                <Link href="/dashboard/google-business">Düzenle</Link>
+              </Button>
+            </CardHeader>
+            <CardContent>
+              <GoogleBusinessResultCard
+                profile={googleProfile}
+                compact
+                searchFallback={{ name: business.name, city: business.city }}
+              />
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Konum</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <GoogleBusinessMap
+                placeId={business.google_place_id}
+                mapsUrl={business.google_business_url}
+                query={[business.name, business.city].filter(Boolean).join(", ")}
+                apiKey={process.env.GOOGLE_MAPS_API_KEY ?? null}
+              />
+            </CardContent>
+          </Card>
+        </div>
+      ) : (
+        <Card className="border-dashed">
+          <CardContent className="flex flex-col items-center gap-3 py-8 text-center">
+            <p className="text-sm text-slate-500">
+              Google&apos;da işletme profilinizi bağlayarak arama sonucu
+              önizlemesini panele ekleyin.
+            </p>
+            <Button asChild>
+              <Link href="/dashboard/google-business">Google İşletme Bağla</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
