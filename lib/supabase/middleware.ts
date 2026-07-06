@@ -36,7 +36,8 @@ export async function updateSession(request: NextRequest) {
     if (
       !user &&
       (request.nextUrl.pathname.startsWith("/dashboard") ||
-        request.nextUrl.pathname.startsWith("/onboarding"))
+        request.nextUrl.pathname.startsWith("/onboarding") ||
+        request.nextUrl.pathname.startsWith("/setup"))
     ) {
       const url = request.nextUrl.clone();
       url.pathname = "/auth/login";
@@ -50,7 +51,7 @@ export async function updateSession(request: NextRequest) {
         request.nextUrl.pathname.startsWith("/auth/register"))
     ) {
       const url = request.nextUrl.clone();
-      url.pathname = "/dashboard";
+      url.pathname = "/onboarding";
       return NextResponse.redirect(url);
     }
 

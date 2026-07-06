@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getCurrentBusiness } from "@/lib/auth";
+import { getCurrentUser, getOrCreateBusinessForUser } from "@/lib/auth";
 import { DashboardSidebar } from "@/components/dashboard/sidebar";
 
 export default async function DashboardLayout({
@@ -7,10 +7,14 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const business = await getCurrentBusiness();
-
-  if (!business) {
+  const user = await getCurrentUser();
+  if (!user) {
     redirect("/auth/login");
+  }
+
+  const business = await getOrCreateBusinessForUser();
+  if (!business) {
+    redirect("/setup");
   }
 
   if (!business.onboarding_completed) {

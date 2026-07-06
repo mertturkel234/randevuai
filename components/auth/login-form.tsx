@@ -45,7 +45,7 @@ export function LoginForm() {
         return;
       }
 
-      router.push("/dashboard");
+      router.push("/onboarding");
       router.refresh();
     } catch {
       setError("Bağlantı hatası. Lütfen tekrar deneyin.");

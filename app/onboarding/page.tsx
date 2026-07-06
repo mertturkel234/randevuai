@@ -1,11 +1,18 @@
 import { redirect } from "next/navigation";
 import { OnboardingWizard } from "@/components/onboarding/wizard";
-import { getCurrentBusiness } from "@/lib/auth";
+import {
+  getCurrentUser,
+  getOrCreateBusinessForUser,
+} from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function OnboardingPage() {
-  const business = await getCurrentBusiness();
-  if (!business) redirect("/auth/login");
+  const user = await getCurrentUser();
+  if (!user) redirect("/auth/login");
+
+  const business = await getOrCreateBusinessForUser();
+  if (!business) redirect("/setup");
+
   if (business.onboarding_completed) redirect("/dashboard");
 
   const supabase = await createClient();
