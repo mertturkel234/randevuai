@@ -158,6 +158,8 @@ Proje 8 fazda MVP olarak tamamlanmıştır:
 
 ## Kurulum
 
+Detaylı rehber: **[docs/KURULUM.md](docs/KURULUM.md)**
+
 ### Gereksinimler
 
 - Node.js 20+
