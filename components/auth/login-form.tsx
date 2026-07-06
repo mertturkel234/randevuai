@@ -27,20 +27,31 @@ export function LoginForm() {
     setLoading(true);
     setError("");
 
-    const supabase = createClient();
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) {
-      setError(error.message);
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+      setError("Sunucu yapılandırması eksik.");
       setLoading(false);
       return;
     }
 
-    router.push("/dashboard");
-    router.refresh();
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        setError(error.message);
+        return;
+      }
+
+      router.push("/dashboard");
+      router.refresh();
+    } catch {
+      setError("Bağlantı hatası. Lütfen tekrar deneyin.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (

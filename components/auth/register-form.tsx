@@ -21,30 +21,56 @@ export function RegisterForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError("");
+    setSuccess("");
 
-    const supabase = createClient();
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: { business_name: businessName },
-      },
-    });
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-    if (error) {
-      setError(error.message);
+    if (!supabaseUrl || !supabaseKey) {
+      setError(
+        "Sunucu yapılandırması eksik. Supabase bağlantısı kurulamadı."
+      );
       setLoading(false);
       return;
     }
 
-    router.push("/onboarding");
-    router.refresh();
+    try {
+      const supabase = createClient();
+      const { data, error: signUpError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { business_name: businessName },
+          emailRedirectTo: `${window.location.origin}/onboarding`,
+        },
+      });
+
+      if (signUpError) {
+        setError(signUpError.message);
+        return;
+      }
+
+      if (data.user && !data.session) {
+        setSuccess(
+          "Kayıt başarılı! E-posta doğrulama linki gönderildi. Linke tıkladıktan sonra giriş yapabilirsiniz."
+        );
+        return;
+      }
+
+      router.push("/onboarding");
+      router.refresh();
+    } catch {
+      setError("Bağlantı hatası. Lütfen tekrar deneyin.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -87,6 +113,7 @@ export function RegisterForm() {
             />
           </div>
           {error && <p className="text-sm text-red-600">{error}</p>}
+          {success && <p className="text-sm text-emerald-600">{success}</p>}
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? "Kayıt olunuyor..." : "Kayıt Ol"}
           </Button>
