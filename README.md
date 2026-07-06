@@ -43,6 +43,45 @@ WhatsApp Cloud API üzerinden gelen mesajlar webhook ile yakalanır, **Google Ge
 
 ## Mimari
 
+```mermaid
+flowchart TB
+    subgraph Customer["Customer Channel"]
+        WA["WhatsApp Client"]
+    end
+
+    subgraph Meta["Meta Platform"]
+        WAPI["WhatsApp Cloud API<br/>Webhook"]
+    end
+
+    subgraph App["Next.js Application"]
+        WH["/api/webhook/whatsapp"]
+        AI["AI Receptionist<br/>Gemini 2.0 Flash + Function Calling"]
+        DASH["Business Dashboard"]
+        CRON["Reminder Cron"]
+    end
+
+    subgraph Services["External Services"]
+        GEMINI["Google Gemini API"]
+        GCAL["Google Calendar OAuth2"]
+    end
+
+    subgraph Data["Supabase"]
+        PG[(PostgreSQL + Auth)]
+        RLS["Row Level Security"]
+    end
+
+    WA --> WAPI --> WH --> AI
+    AI --> GEMINI
+    AI --> PG
+    AI --> GCAL
+    DASH --> PG
+    CRON --> PG
+    PG --- RLS
+```
+
+<details>
+<summary>ASCII diagram (fallback)</summary>
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                        MÜŞTERİ (WhatsApp)                        │
@@ -77,6 +116,8 @@ WhatsApp Cloud API üzerinden gelen mesajlar webhook ile yakalanır, **Google Ge
 │   /dashboard · /settings · /services · /appointments             │
 └─────────────────────────────────────────────────────────────────┘
 ```
+
+</details>
 
 ### Katman Sorumlulukları
 
@@ -252,11 +293,14 @@ WhatsApp: "Randevunuz onaylandı ✅"
 
 ## Güvenlik
 
+Detaylı güvenlik mimarisi için bkz. [SECURITY.md](./SECURITY.md).
+
 - **Supabase RLS**: Her işletme yalnızca kendi verisini görür
 - **Webhook imza**: `x-hub-signature-256` doğrulama (Meta)
 - **Rate limiting**: İşletme başına günlük mesaj limiti (trial: 50)
 - **Cron auth**: `CRON_SECRET` Bearer token
 - **Env izolasyonu**: `.env.local` git'e dahil edilmez
+- **AI güvenliği**: Function calling yalnızca sunucu tarafında çalışır
 
 ---
 
@@ -318,7 +362,7 @@ Production sonrası güncelleyin:
 
 ## Katkı
 
-Bu proje aktif geliştirme aşamasındadır. Issue ve PR'lar değerlendirilir.
+Bu proje aktif geliştirme aşamasındadır. [CONTRIBUTING.md](./CONTRIBUTING.md) dosyasına bakın. Conventional Commits ve feature-branch PR süreci uygulanır.
 
 ---
 
